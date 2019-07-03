@@ -5,6 +5,18 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import './App.css';
 
+const largeColumn = {
+  width: '40%',
+};
+
+const midColumn = {
+  width: '30%',
+};
+
+const smallColumn = {
+  width: '10%',
+};
+
 const DEFAULT_QUERY = 'redux';
 const DEFAULT_HPP = '100';
 
@@ -22,17 +34,26 @@ const SORTS = {
   POINTS: list => sortBy(list, 'pints')
 }
 
-const largeColumn = {
-  width: '40%',
-};
+const updateSearchTopStoriesState = (hits, page) => (prevState) => {
 
-const midColumn = {
-  width: '30%',
-};
+  const {searchKey, results} = prevState;
+  
+  const oldHits = results && results[searchKey]
+    ? results[searchKey].hits
+    : [];
+  const updatedHits = [
+    ...oldHits,
+    ...hits
+  ];
+  return {
+    results: {
+      ...results,
+      [searchKey]: { hits: updatedHits, page }
+    },
+    isLoading: false
+  };
 
-const smallColumn = {
-  width: '10%',
-};
+}
 
 class App extends Component {
   constructor(props) {
@@ -66,22 +87,8 @@ class App extends Component {
 
   setSearchTopStories(result) {
     const { hits, page } = result;
-    const { searchKey, results } = this.state;
 
-    const oldHits = results && results[searchKey]
-      ? results[searchKey].hits
-      : [];
-    const updatedHits = [
-      ...oldHits,
-      ...hits
-    ];
-    this.setState({ 
-      results: {
-        ...results,
-        [searchKey]: { hits: updatedHits, page }
-      },
-      isLoading: false
-    });
+    this.setState(updateSearchTopStoriesState(hits, page));
   }
 
   fetchSearchTopStories(searchTerm, page = 0) {
