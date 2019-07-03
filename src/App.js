@@ -24,6 +24,8 @@ const smallColumn = {
   width: '10%',
 };
 
+const Loading = () => <div>Loading ...</div>;
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -32,7 +34,8 @@ class App extends Component {
       results: null,
       searchKey: '',
       searchTerm: DEFAULT_QUERY,
-      error: null
+      error: null,
+      isLoading: false
     };
 
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
@@ -68,11 +71,14 @@ class App extends Component {
       results: {
         ...results,
         [searchKey]: { hits: updatedHits, page }
-      }
+      },
+      isLoading: false
     });
   }
 
   fetchSearchTopStories(searchTerm, page = 0) {
+    this.setState({ isLoading: true });
+
     axios(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`)
       .then(result => this.setSearchTopStories(result.data))
       .catch(error => this.setState({ error }));
@@ -111,7 +117,8 @@ class App extends Component {
       searchTerm,
       results,
       searchKey,
-      error
+      error,
+      isLoading
     } = this.state;
 
     const page = (
@@ -147,9 +154,13 @@ class App extends Component {
           />
         }
         <div className="interactions">
-          <Button onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}>
-            More
-          </Button>
+          { isLoading
+            ? <Loading />
+            : <Button
+                onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}>
+                More
+              </Button>
+          }
         </div>
       </div>
     );
